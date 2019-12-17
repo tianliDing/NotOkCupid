@@ -1,0 +1,66 @@
+---
+title: "FINAL_EXAM"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+MyCupid = read.csv("/Users/jiayingning/Downloads/MyCupid.csv")
+```
+
+
+```{r}
+library(shiny)
+```
+
+```{r}
+
+library(tidyverse)
+mpg2 <- filter(MyCupid, drugs == "never" | drugs == "often" | drugs == "sometimes")
+
+ui <- fluidPage(
+ actionButton(inputId = "drugs", label = "drugs"),
+ 
+ actionButton(inputId = "diet", label = "diet"),
+
+ plotOutput("bars")
+)
+
+server <- function(input, output) {
+ rv <- reactiveValues(data = mpg2)
+ 
+ observeEvent(input$drugs, { rv$data <- table(mpg2$drugs) })
+ 
+ observeEvent(input$diet, { rv$data <- table(mpg2$diet) })
+ 
+ output$bars <- renderPlot({ barplot(rv$data, border="white", horiz = TRUE, xlab="frequency") })
+}
+
+shinyApp(ui = ui, server = server, options = list(height = 600))
+```
+
+```{r}
+library(shiny)
+
+ui <- basicPage(
+  plotOutput("plot1", click = "plot_click"),
+  verbatimTextOutput("info")
+)
+
+server <- function(input, output) {
+  output$plot1 <- renderPlot({
+    plot(MyCupid$diet, mtcars$mpg)
+  })
+
+  output$info <- renderText({
+    paste0("x=", input$plot_click$x, "\ny=", input$plot_click$y)
+  })
+}
+
+shinyApp(ui, server)
+```
+
+
