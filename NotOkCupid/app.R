@@ -20,9 +20,9 @@ ui <- fluidPage(
         sidebarPanel(
             sliderInput("bins",
                         "Number of bins:",
-                        min = 1,
+                        min = 18,
                         max = 50,
-                        value = 30)
+                        value = 18)
         ),
 
         # Show a plot of the generated distribution
@@ -34,10 +34,11 @@ ui <- fluidPage(
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
-
+    dataset = read.csv("profiles-2.csv")
     output$distPlot <- renderPlot({
         # generate bins based on input$bins from ui.R
-        x    <- faithful[, 2]
+        
+        x    <- faithful[,1]
         bins <- seq(min(x), max(x), length.out = input$bins + 1)
 
         # draw the histogram with the specified number of bins
