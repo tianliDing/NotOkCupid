@@ -12,55 +12,115 @@ MyCupid = read.csv("/Users/jiayingning/Downloads/MyCupid.csv")
 ```
 
 
+
+
 ```{r}
-library(shiny)
+library(ggvis)
+library(dplyr)
+if (FALSE) {
+  library(RSQLite)
+  library(dbplyr)
+}
 ```
 
-```{r}
 
-library(tidyverse)
-mpg2 <- filter(MyCupid, drugs == "never" | drugs == "often" | drugs == "sometimes")
+```{r}
+CupidDf <- MyCupid %>%
+    mutate(cupid_name = row.names(MyCupid)) %>%
+    select(cupid_name, offspring_1, sign,body_type,drinks,drugs,status,smokes)
 
 ui <- fluidPage(
- actionButton(inputId = "drugs", label = "drugs"),
- 
- actionButton(inputId = "diet", label = "diet"),
-
- plotOutput("bars")
+    titlePanel(""),
+    
+    sidebarLayout(
+        sidebarPanel(
+            textInput("name",
+                      "YOUR Destiny"),
+            selectInput("sign",
+                        "sign",
+                        choices = CupidDf$sign
+            ),
+            selectInput("body_type",
+                        "Your preferred body type",
+                        choices = CupidDf$body_type
+            ),
+            selectInput("status",
+                        "Your preferred status",
+                        choices = CupidDf$status
+            ),
+            selectInput("drinks",
+                        "What kind of drinking frequency can you accept?",
+                        choices = CupidDf$drinks
+            ),
+            selectInput("drugs",
+                        "What kind of drugs habit can you accept?",
+                        choices = CupidDf$drugs
+            ),
+            selectInput("smokes",
+                        "Do you accept smoking behavior, if so what kind of smoking status can you accept?",
+                        choices = CupidDf$smokes
+            ),
+            selectInput("offspring_1",
+                        "Do you want Kids?",
+                        choices = CupidDf$offspring_1)
+        ),
+        mainPanel(
+            DT::dataTableOutput("table"),
+            plotOutput("plot")
+        )
+    )
 )
 
-server <- function(input, output) {
- rv <- reactiveValues(data = mpg2)
- 
- observeEvent(input$drugs, { rv$data <- table(mpg2$drugs) })
- 
- observeEvent(input$diet, { rv$data <- table(mpg2$diet) })
- 
- output$bars <- renderPlot({ barplot(rv$data, border="white", horiz = TRUE, xlab="frequency") })
+server <- function(input, output, session) {
+    
+    reactiveDf <- reactive({
+        if (input$name == "" &
+            input$offspring_1 == "") {
+            return(CupidDf)
+        }
+        
+        if (input$name != "") {
+            CupidDf <- CupidDf %>%
+                filter(
+                    grepl(input$name, cupid_name, ignore.case = TRUE)
+                )
+            
+        }
+        
+        if (input$offspring_1 != "") {
+            CupidDf <- CupidDf %>%
+                filter(
+                    offspring_1 == input$offspring_1
+                )
+            
+        }
+        
+        return(CupidDf)
+    })
+ conditional <- function(condition, success) {
+    if (condition) success else TRUE
 }
 
-shinyApp(ui = ui, server = server, options = list(height = 600))
-```
+reactiveDf <- reactive({
+  CupidDf %>%
+    filter(
+      conditional(input$name != "", grepl(input$name, cupid_name, ignore.case = TRUE)),
+      conditional(input$sign != "", sign == input$sign),
+      conditional(input$body_type != "", body_type == input$body_type),
+      conditional(input$drinks != "", drinks == input$drinks),
+      conditional(input$drugs != "", drugs == input$drugs),
+      conditional(input$smokes != "", smokes == input$smokes),
+      conditional(input$status != "", status == input$status),
+      conditional(input$offspring_1 != "", offspring_1 == input$offspring_1)
+    )
+})
 
-```{r}
-library(shiny)
-
-ui <- basicPage(
-  plotOutput("plot1", click = "plot_click"),
-  verbatimTextOutput("info")
-)
-
-server <- function(input, output) {
-  output$plot1 <- renderPlot({
-    plot(MyCupid$diet, mtcars$mpg)
-  })
-
-  output$info <- renderText({
-    paste0("x=", input$plot_click$x, "\ny=", input$plot_click$y)
-  })
+    output$table <- DT::renderDataTable({
+        reactiveDf()
+    })
+    
 }
 
 shinyApp(ui, server)
 ```
-
 
