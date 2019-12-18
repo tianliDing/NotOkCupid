@@ -13,6 +13,15 @@ library(tm)
 library(wordcloud)
 library(memoise)
 library(ggvis)
+library(shiny)
+library(shinyWidgets)
+library(dplyr)
+# data cleaning
+CupidDf <- MyCupid %>%
+    mutate(cupid_name = row.names(MyCupid)) %>%
+    select(cupid_name, age, height, offspring_1, sign,body_type,drinks,drugs,status,smokes)
+
+
 
 # Define UI for application that draws a histogram
 
@@ -31,48 +40,63 @@ ui <- navbarPage(
                  selectInput("yv", "Y-axis:",
                              c("INCOME" = "income", "HEIGHT" = "height")),
              ),
-                 
              mainPanel(
                  plotOutput("distPlot"),
              )),
+             setBackgroundImage(src = "http://static.adweek.com/adweek.com-prod/wp-content/uploads/2018/01/dtf-hed-2017.jpg")
     ), 
-   
-     tabPanel("Component 2",
+    
+    
+    tabPanel("Component 2",
              titlePanel("NotOkCupid"),
              sidebarLayout(
-             sidebarPanel(
-             sliderInput("bins",
-                         "Number of bins:",
-                         min = 18,
-                         max = 69,
-                         value = 30),
-             selectInput("yv", "Y-axis:",
-                         c("INCOME" = "income", "HEIGHT" = "height")),
-             selectInput("xv", "X-axis:",
-                         c("AGE" = "age", "HEIGHT" = "height")),
-             ),
-    
-    mainPanel(
-        plotOutput("relationship"),
-    )),
-     ),
-    
-    tabPanel("Component 3",
-             titlePanel("NotOkCupid"),
-             sidebarLayout(
-             sidebarPanel(
-                 sliderInput("freq",
-                             "Minimum Frequency:",
-                             min = 1,  max = 50, value = 15),
-                 sliderInput("max",
-                             "Maximum Number of Words:",
-                             min = 1,  max = 300,  value = 100)  
-             ),
-          
-    mainPanel(
-        plotOutput("plot"),
-             )),
+                 sidebarPanel(
+                     sliderInput("freq",
+                                 "Minimum Frequency:",
+                                 min = 1,  max = 50, value = 15),
+                     sliderInput("max",
+                                 "Maximum Number of Words:",
+                                 min = 1,  max = 300,  value = 100)  
+                 ),
+                 mainPanel(
+                     plotOutput("plot", height = "400px", width = "900px"),
+                 )),
     ),
+    
+   
+    tabPanel("Component 3",
+             titlePanel("RELATIONSHIP"),
+             fluidRow(
+                 column(3,
+                        wellPanel(
+                            h4("Filter"),
+                            selectInput("sex_3", "your prefered sex:",
+                                        c("male" = "m", "female" = "f")),
+                            sliderInput("height2_3", "your ideal Height:",
+                                        109, 242, 0, step = 10),
+                            sliderInput("income_3", "What is your preferred income:", 0, 1000000, 0,
+                                        step = 100000),
+                            selectInput("Offspring_1_3", "do you want to have a already borned kids",
+                                        c("YES" = "YES", "NO" = "NO"),),
+                        ),
+                        wellPanel(
+                            selectInput("xv4", "X-axis variable", c("Orientation" = "orientation","Drugs"="drugs","Age"="age"), selected = "Orientation"),
+                            selectInput("yv4", "Y-axis variable", c("Orientation" = "orientation","Drugs"="drugs","Age"="age"), selected = "Drugs"),
+                        )
+                 ),
+                 column(9,
+                        wellPanel(
+                            span("Number of cupid selected:",
+                                 textOutput("n_Cupid")
+                            )
+                        ),
+                        wellPanel(
+                            plotOutput("filterPlot")
+                        )
+                 )
+             )
+    ),
+                 
 
     
     tabPanel("Component 4",
@@ -80,37 +104,70 @@ ui <- navbarPage(
              fluidRow(
                  column(3,
                         wellPanel(
-                            h4("Filter"),
-                            sliderInput("Height", "your ideal Height",
-                                        43, 95, 0, step = 10),
-                            sliderInput("Income", "What is your preferred income", 0, 1000000, 0,
-                                        step = 100000),
-                            selectInput("Offspring_1", "do you want to have a already borned kids",
-                                        c("YES", "NO")
-                            ),),
-                        wellPanel(
-                            selectInput("xvar", "X-axis variable", c('Orientation',"Drugs","Age"), selected = "Orientation"),
-                            selectInput("yvar", "Y-axis variable", c('Orientation',"Drugs","Age"), selected = "Drugs"),
+                         textInput("name",
+                                   "YOUR Destiny"),
+                         selectInput("sign",
+                                     "sign",
+                                     choices = CupidDf$sign
+                         ),
+                         selectInput("body_type",
+                                     "Your preferred body type",
+                                     choices = CupidDf$body_type
+                         ),
+                         selectInput("status",
+                                     "Your preferred status",
+                                     choices = CupidDf$status
+                         ),
+                         selectInput("drinks",
+                                     "What kind of drinking frequency can you accept?",
+                                     choices = CupidDf$drinks
+                         ),
+                         selectInput("drugs",
+                                     "What kind of drugs habit can you accept?",
+                                     choices = CupidDf$drugs
+                         ),
+                         selectInput("smokes",
+                                     "Do you accept smoking behavior, if so what kind of smoking status can you accept?",
+                                     choices = CupidDf$smokes
+                         ),
+                         selectInput("offspring_1",
+                                     "Do you want Kids?",
+                                     choices = CupidDf$offspring_1)
                         )
-                 ),
-                 column(9,
-                        ggvisOutput("plot1"),
-                        wellPanel(
-                            span("Number of cupid selected:",
-                                 textOutput("n_cupid")
-                            )
-                        )
+                     ),
+                     column(9,
+                         wellPanel(
+                            DT::dataTableOutput("table"),
+                            plotOutput("plot4")
+                         )
+                     )
                  )
              )
-    )
+    
 )
 
 # The list of valid books
 
 MyCupid = read.csv("MyCupid.csv")
-book = MyCupid[,11]
-books = book[! is.na(book)]
-
+book = list("Job")
+# Using "memoise" to automatically cache the results
+getTermMatrix <- memoise(function(book) {
+    
+    text <- readLines( file("Jobs.csv") )
+    myCorpus = Corpus(VectorSource(text))
+    myCorpus = tm_map(myCorpus, content_transformer(tolower))
+    myCorpus = tm_map(myCorpus, removePunctuation)
+    myCorpus = tm_map(myCorpus, removeNumbers)
+    myCorpus = tm_map(myCorpus, removeWords,
+                      c(stopwords("SMART"), "thy", "thou", "thee", "the", "and", "but"))
+    
+    myDTM = TermDocumentMatrix(myCorpus,
+                               control = list(minWordLength = 1))
+    
+    m = as.matrix(myDTM)
+    
+    sort(rowSums(m), decreasing = TRUE)
+})
 
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
@@ -138,6 +195,105 @@ server <- function(input, output, session) {
            # MyCupid[, c(x, y), drop = FALSE]
         plot(x,y)
     })
+##### ==================================== Component2 ======================================    
+    # Define a reactive expression for the document term matrix
+    terms <- reactive({
+        # Change when the "update" button is pressed...
+        input$update
+        # ...but not for anything else
+        isolate({
+            withProgress({
+                setProgress(message = "Processing corpus...")
+                getTermMatrix(input$selection)
+            })
+        })
+    })
+    
+    wordcloud_rep <- repeatable(wordcloud)
+    
+    output$plot <- renderPlot({
+        v <- terms()
+        wordcloud_rep(names(v), v, scale=c(4,0.5),
+                      min.freq = input$freq, max.words=input$max,
+                      colors=brewer.pal(8, "Dark2"))
+    })
+    
+##### ==================================== Component3 ======================================
+    output$n_Cupid <- renderText({
+        x = nrow(MyCupid)
+        print(x)
+    })
+    output$filterPlot <- renderPlot({
+        print("hahhaha")
+        MyCupid = MyCupid[MyCupid$sex_3 == input$sex,]
+        MyCupid = MyCupid[MyCupid$height2_3 > input$height2,]
+        if(input$xv4 == "orientation"){
+            x <- MyCupid[,15]
+        }else if(input$xv4 == "drugs"){
+            x <- MyCupid[,6]
+        }else if(input$xv4 == "age"){
+            x <- MyCupid[,2]
+        }
+        
+        if(input$yv4 == "orientation"){
+            y<- MyCupid[,15]
+        }else if(input$yv4 == "drugs"){
+            y<- MyCupid[,6]
+        }else if(input$yv4 == "age"){
+            x <- MyCupid[,2]
+        }
+        # MyCupid[, c(x, y), drop = FALSE]
+        plot(x,y)
+    })
+    
+    
+##### ==================================== Component4 ======================================
+    reactiveDf <- reactive({
+        if (input$name == "" &
+            input$offspring_1 == "") {
+            return(CupidDf)
+        }
+        
+        if (input$name != "") {
+            CupidDf <- CupidDf %>%
+                filter(
+                    grepl(input$name, cupid_name, ignore.case = TRUE)
+                )
+            
+        }
+        
+        if (input$offspring_1 != "") {
+            CupidDf <- CupidDf %>%
+                filter(
+                    offspring_1 == input$offspring_1
+                )
+            
+        }
+        
+        return(CupidDf)
+    })
+    conditional <- function(condition, success) {
+        if (condition) success else TRUE
+    }
+    
+    reactiveDf <- reactive({
+        CupidDf %>%
+            filter(
+                conditional(input$name != "", grepl(input$name, cupid_name, ignore.case = TRUE)),
+                conditional(input$sign != "", sign == input$sign),
+                conditional(input$body_type != "", body_type == input$body_type),
+                conditional(input$drinks != "", drinks == input$drinks),
+                conditional(input$drugs != "", drugs == input$drugs),
+                conditional(input$smokes != "", smokes == input$smokes),
+                conditional(input$status != "", status == input$status),
+                conditional(input$offspring_1 != "", offspring_1 == input$offspring_1)
+            )
+    })
+    
+    output$table <- DT::renderDataTable({
+        reactiveDf()
+    })
+    
 
 }
 
