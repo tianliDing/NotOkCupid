@@ -14,7 +14,7 @@ library(readr)
 ui <- fluidPage(
 
     # Application title
-    titlePanel("Old Faithful Geyser Data"),
+    titlePanel("NotOkCupid"),
 
     # Sidebar with a slider input for number of bins 
     sidebarLayout(
@@ -22,28 +22,52 @@ ui <- fluidPage(
             sliderInput("bins",
                         "Number of bins:",
                         min = 18,
-                        max = 50,
-                        value = 18)
+                        max = 69,
+                        value = 30),
+            selectInput("yv", "Y-axis:",
+                        c("INCOME" = "income", "HEIGHT" = "height")),
+            selectInput("xv", "X-axis:",
+                        c("AGE" = "age", "HEIGHT" = "height")),
         ),
 
         # Show a plot of the generated distribution
         mainPanel(
-           plotOutput("distPlot")
-        )
+           plotOutput("distPlot"),
+           plotOutput("relationship"),
+        ),
+
     )
 )
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
     MyCupid = read.csv("MyCupid.csv")
+    
     output$distPlot <- renderPlot({
         # generate bins based on input$bins from ui.R
-        
         x    <- MyCupid[,2]
         bins <- seq(min(x), max(x), length.out = input$bins + 1)
         # draw the histogram with the specified number of bins
         hist(x, breaks = bins, col = 'darkgray', border = 'white')
     })
+
+    output$relationship <- renderPlot({
+
+        if(input$xv == "age"){
+            x <- MyCupid[,2]
+        }else if(input$xv == "height"){
+            x <- MyCupid[,9]
+        }
+        if(input$yv == "income"){
+            y<- MyCupid[,10]
+        }else if(input$yv == "height"){
+            y<- MyCupid[,9]
+        }
+           # MyCupid[, c(x, y), drop = FALSE]
+        plot(x,y)
+    })
+    
+
 }
 
 # Run the application 

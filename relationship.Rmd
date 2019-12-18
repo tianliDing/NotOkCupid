@@ -1,0 +1,8 @@
+---
+title: "relationship"
+author: "Tianli Ding"
+date: "12/17/2019"
+output: html_document
+---
+
+## age && income
