@@ -16,20 +16,36 @@ library(ggvis)
 library(shiny)
 library(shinyWidgets)
 library(dplyr)
+library(shinythemes)
+
+# helper variables
+MyCupid = read.csv("MyCupid.csv")
+varss = list("Job","Ethnicity")
 # data cleaning
 CupidDf <- MyCupid %>%
     mutate(cupid_name = row.names(MyCupid)) %>%
     select(cupid_name, age, sex, height)
 
-
-
-# Define UI for application that draws a histogram
+# Define UI for application
 
 ui <- navbarPage(
     fluid = TRUE,
+    theme = shinytheme("paper"),
     "NotOkCupid",
-    tabPanel("Component 1",
-             titlePanel("NotOkCupid"),
+##### ==================================== About Page ======================================    
+    tabPanel("Story Board",
+             fluidRow(
+                 column(6,
+                        wellPanel(
+                        includeMarkdown("test.md")
+                 ),
+                 )
+             )
+    ),
+##### ==================================== Demographic1 ======================================    
+    navbarMenu("GET TO KNOW YOUR POTENTIAL MATCHES!",
+    tabPanel("Age, Height and Income",
+             titlePanel("Age, Height and Income"),
              sidebarLayout(
              sidebarPanel(
                  sliderInput("bins",
@@ -41,15 +57,22 @@ ui <- navbarPage(
                              c("INCOME" = "income", "HEIGHT" = "height")),
              ),
              mainPanel(
-                 plotOutput("distPlot"),
+                 column(8, align="center",
+                        plotOutput("distPlot"),
+                 )
+                 
              )),
              setBackgroundImage(src = "http://static.adweek.com/adweek.com-prod/wp-content/uploads/2018/01/dtf-hed-2017.jpg")
     ), 
     
-    
-    tabPanel("Component 2",
-             titlePanel("NotOkCupid"),
-             sidebarLayout(
+    ##### ==================================== Demographic2 ======================================    
+    tabPanel("Ethnicity and Job",
+             titlePanel("Ethnicity and Job"),
+             
+                 selectInput("selection", "Choose a Variable:",
+                             choices = varss),
+                 actionButton("update", "Change"),
+                 hr(),
                  sidebarPanel(
                      sliderInput("freq",
                                  "Minimum Frequency:",
@@ -59,45 +82,45 @@ ui <- navbarPage(
                                  min = 1,  max = 300,  value = 100)  
                  ),
                  mainPanel(
-                     plotOutput("plot", height = "400px", width = "900px"),
-                 )),
+                     plotOutput("plot", height = "800px", width = "800px"),
+                 ),
+    )
     ),
     
-   
-    tabPanel("Component 3",
-             titlePanel("RELATIONSHIP"),
-             fluidRow(
-                 column(3,
-                        wellPanel(
-                            h4("Filter"),
-                            selectInput("sex_3", "your prefered sex:",
-                                        c("male" = "m", "female" = "f")),
-                            sliderInput("height2_3", "your ideal Height:",
-                                        109, 242, 0, step = 10),
-                            sliderInput("income_3", "What is your preferred income:", 0, 1000000, 0,
-                                        step = 100000),
-                            selectInput("Offspring_1_3", "do you want to have a already borned kids",
-                                        c("YES" = "YES", "NO" = "NO"),),
-                        ),
-                        wellPanel(
-                            selectInput("xv4", "X-axis variable", c("Orientation" = "orientation","Drugs"="drugs","Age"="age"), selected = "Orientation"),
-                            selectInput("yv4", "Y-axis variable", c("Orientation" = "orientation","Drugs"="drugs","Age"="age"), selected = "Drugs"),
-                        )
-                 ),
-                 column(9,
-                        wellPanel(
-                            span("Number of cupid selected:",
-                                 textOutput("n_Cupid")
-                            )
-                        ),
-                        wellPanel(
-                            plotOutput("filterPlot")
-                        )
-                 )
-             )
-    ),
-                 
+##### ==================================== Relationship ====================================== 
 
+tabPanel("Component 3",
+         titlePanel("RELATIONSHIP"),
+         fluidRow(
+             column(3,
+                    wellPanel(
+                        h4("Filter"),
+                        selectInput("sex_3", "your prefered sex:",
+                                    c("male" = "m", "female" = "f")),
+                        sliderInput("height2_3", "your ideal height range (cm):",
+                                    109, 242,c(150,190), step = 1),
+                        sliderInput("income_3", "your preferred income range (annual salary):", 0, 1000000, c(0,400000),
+                                    step = 10000)
+                    ),
+                    wellPanel(
+                        selectInput("xv4", "X-axis variable", c("orientation" = "orientation","drugs"="drugs","drink"="drinks", "smoke"="smokes")),
+                        selectInput("yv4", "Y-axis variable", c("Age"="age","Orientation" = "orientation","Drugs"="drugs"))
+                    )
+             ),
+             column(9,
+                    wellPanel(
+                        span("Number of cupid selected for you:",
+                             textOutput("n_Cupid")
+                        )
+                    ),
+                    wellPanel(
+                        plotOutput("filterPlot")
+                    )
+             )
+         )
+),
+                 
+##### ==================================== Dating ======================================
     
     tabPanel("Component 4",
              titlePanel("DATING EXPLORER"),
@@ -108,31 +131,32 @@ ui <- navbarPage(
                                    "YOUR Destiny"),
                          selectInput("sign",
                                      "sign",
-                                     choices = CupidDf$sign
+                                     choices = c("NO PREFERENCE", CupidDf$sign)
                          ),
                          selectInput("body_type",
                                      "Your preferred body type",
-                                     choices = CupidDf$body_type
+                                     choices = c("NO PREFERENCE", CupidDf$body_type)
                          ),
                          selectInput("status",
                                      "Your preferred status",
-                                     choices = CupidDf$status
+                                     choices = c("NO PREFERENCE", CupidDf$status)
                          ),
                          selectInput("drinks",
                                      "What kind of drinking frequency can you accept?",
-                                     choices = CupidDf$drinks
+                                     choices = c("NO PREFERENCE", CupidDf$drinks)
                          ),
                          selectInput("drugs",
                                      "What kind of drugs habit can you accept?",
-                                     choices = CupidDf$drugs
+                                     choices = c("NO PREFERENCE", CupidDf$drugs)
                          ),
                          selectInput("smokes",
                                      "Do you accept smoking behavior, if so what kind of smoking status can you accept?",
-                                     choices = CupidDf$smokes
+                                     choices = c("NO PREFERENCE", CupidDf$smokes)
                          ),
                          selectInput("offspring_1",
                                      "Do you want Kids?",
-                                     choices = CupidDf$offspring_1)
+                                     choices = c("NO PREFERENCE", CupidDf$offspring_1)
+                         )
                         )
                      ),
                      column(9,
@@ -146,14 +170,15 @@ ui <- navbarPage(
     
 )
 
-# The list of valid books
-
-MyCupid = read.csv("MyCupid.csv")
-book = list("Job")
-# Using "memoise" to automatically cache the results
-getTermMatrix <- memoise(function(book) {
+### wordcloud helper
+getTermMatrix <- memoise(function(var) {
     
-    text <- readLines( file("Jobs.csv") )
+    if (var=="Job"){
+        text <- readLines( file("Jobs.csv") )
+    } else {
+        text <- readLines( file("ethnicity.csv") )
+    }
+    
     myCorpus = Corpus(VectorSource(text))
     myCorpus = tm_map(myCorpus, content_transformer(tolower))
     myCorpus = tm_map(myCorpus, removePunctuation)
@@ -213,26 +238,36 @@ server <- function(input, output, session) {
     
     output$plot <- renderPlot({
         v <- terms()
-        wordcloud_rep(names(v), v, scale=c(4,0.5),
+        wordcloud_rep(names(v), v, scale=c(9,0.5),
                       min.freq = input$freq, max.words=input$max,
                       colors=brewer.pal(8, "Dark2"))
     })
     
 ##### ==================================== Component3 ======================================
     output$n_Cupid <- renderText({
+        MyCupid = MyCupid[input$sex_3 == MyCupid$sex,]
+        MyCupid = MyCupid[MyCupid$height2 >= input$height2_3[1],]
+        MyCupid = MyCupid[MyCupid$height2 <= input$height2_3[2],]
+        MyCupid = MyCupid[MyCupid$income >= input$income_3[1],]
+        MyCupid = MyCupid[MyCupid$income <= input$income_3[2],]
         x = nrow(MyCupid)
         print(x)
     })
+    
     output$filterPlot <- renderPlot({
-        print("hahhaha")
-        MyCupid = MyCupid[MyCupid$sex_3 == input$sex,]
-        MyCupid = MyCupid[MyCupid$height2_3 > input$height2,]
+        MyCupid = MyCupid[input$sex_3 == MyCupid$sex,]
+        MyCupid = MyCupid[MyCupid$height2 >= input$height2_3[1],]
+        MyCupid = MyCupid[MyCupid$height2 <= input$height2_3[2],]
+        MyCupid = MyCupid[MyCupid$income >= input$income_3[1],]
+        MyCupid = MyCupid[MyCupid$income <= input$income_3[2],]
         if(input$xv4 == "orientation"){
             x <- MyCupid[,15]
         }else if(input$xv4 == "drugs"){
             x <- MyCupid[,6]
-        }else if(input$xv4 == "age"){
-            x <- MyCupid[,2]
+        }else if(input$xv4 == "drinks"){
+            x <- MyCupid[,5]
+        }else if(input$xv4 == "smokes"){
+            x <- MyCupid[,20]
         }
         
         if(input$yv4 == "orientation"){
@@ -240,12 +275,10 @@ server <- function(input, output, session) {
         }else if(input$yv4 == "drugs"){
             y<- MyCupid[,6]
         }else if(input$yv4 == "age"){
-            x <- MyCupid[,2]
+            y <- MyCupid[,2]
         }
-        # MyCupid[, c(x, y), drop = FALSE]
-        plot(x,y)
+        plot(x,y,main="The Relationships", ylab=input$yv4, xlab=input$xv4, col="lightpink2")
     })
-    
     
 ##### ==================================== Component4 ======================================
     reactiveDf <- reactive({
@@ -280,13 +313,13 @@ server <- function(input, output, session) {
         CupidDf %>%
             filter(
                 conditional(input$name != "", grepl(input$name, cupid_name, ignore.case = TRUE)),
-                conditional(input$sign != "", sign == input$sign),
-                conditional(input$body_type != "", body_type == input$body_type),
-                conditional(input$drinks != "", drinks == input$drinks),
-                conditional(input$drugs != "", drugs == input$drugs),
-                conditional(input$smokes != "", smokes == input$smokes),
-                conditional(input$status != "", status == input$status),
-                conditional(input$offspring_1 != "", offspring_1 == input$offspring_1)
+                conditional(input$sign != "NO PREFERENCE", sign == input$sign),
+                conditional(input$body_type != "NO PREFERENCE", body_type == input$body_type),
+                conditional(input$drinks != "NO PREFERENCE", drinks == input$drinks),
+                conditional(input$drugs != "NO PREFERENCE", drugs == input$drugs),
+                conditional(input$smokes != "NO PREFERENCE", smokes == input$smokes),
+                conditional(input$status != "NO PREFERENCE", status == input$status),
+                conditional(input$offspring_1 != "NO PREFERENCE", offspring_1 == input$offspring_1)
             )
     })
     
