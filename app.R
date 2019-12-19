@@ -22,14 +22,17 @@ library(shinythemes)
 MyCupid = read.csv("MyCupid.csv")
 varss = list("Job","Ethnicity")
 # data cleaning
-#CupidDf <- MyCupid %>%
-    #mutate(cupid_name = row.names(MyCupid)) %>%
-    #select(cupid_name, age, sex, height)
+
 CupidDf <- MyCupid %>%
     mutate(cupid_name = row.names(MyCupid)) %>%
+<<<<<<< HEAD
     dplyr::select(cupid_name, age, sex, height,offspring_1,sign,body_type,status,drinks,drugs,smokes)
 
 # Define UI for application
+=======
+select(cupid_name, age, sex, height, offspring_1, sign,body_type,drinks,drugs,status,smokes)
+
+>>>>>>> 350ed30c78150a25e47ba77c6d12f39e9c3f4372
 
 ui <- navbarPage(
     fluid = TRUE,
