@@ -9,10 +9,10 @@
 
 library(shiny)
 library(readr)
-library(tm)
+#library(tm)
 library(wordcloud)
 library(memoise)
-library(ggvis)
+#library(ggvis)
 library(shiny)
 library(shinyWidgets)
 library(dplyr)
@@ -27,8 +27,8 @@ varss = list("Job","Ethnicity")
     #select(cupid_name, age, sex, height)
 CupidDf <- MyCupid %>%
     mutate(cupid_name = row.names(MyCupid)) %>%
-    #select(cupid_name, age, height, offspring_1, sign,body_type,drinks,drugs,status,smokes)
-select(cupid_name, age, sex, height, offspring_1, sign,body_type,drinks,drugs,status,smokes)
+    dplyr::select(cupid_name, age, sex, height,offspring_1,sign,body_type,status,drinks,drugs,smokes)
+
 # Define UI for application
 
 ui <- navbarPage(
@@ -125,7 +125,7 @@ tabPanel("Component 3",
                  
 ##### ==================================== Dating ======================================
   
-    tabPanel("Component 4",
+    tabPanel("Find Your Destiny",
              titlePanel("DATING EXPLORER"),
              fluidRow(
                  column(3,
@@ -134,31 +134,31 @@ tabPanel("Component 3",
                                    "YOUR Destiny"),
                          selectInput("sign",
                                      "sign",
-                                     choices = c("NO PREFERENCE", CupidDf$sign)
+                                     choices = c("NO PREFERENCE", as.character(CupidDf$sign))
                          ),
                          selectInput("body_type",
                                      "Your preferred body type",
-                                     choices = c("NO PREFERENCE", CupidDf$body_type)
+                                     choices = c("NO PREFERENCE", as.character(CupidDf$body_type))
                          ),
                          selectInput("status",
                                      "Your preferred status",
-                                     choices = c("NO PREFERENCE", CupidDf$status)
+                                     choices = c("NO PREFERENCE", as.character(CupidDf$status))
                          ),
                          selectInput("drinks",
                                      "What kind of drinking frequency can you accept?",
-                                     choices = c("NO PREFERENCE", CupidDf$drinks)
+                                     choices = c("NO PREFERENCE", as.character(CupidDf$drinks))
                          ),
                          selectInput("drugs",
                                      "What kind of drugs habit can you accept?",
-                                     choices = c("NO PREFERENCE", CupidDf$drugs)
+                                     choices = c("NO PREFERENCE", as.character(CupidDf$drugs))
                          ),
                          selectInput("smokes",
                                      "Do you accept smoking behavior, if so what kind of smoking status can you accept?",
-                                     choices = c("NO PREFERENCE", CupidDf$smokes)
+                                     choices = c("NO PREFERENCE", as.character(CupidDf$smokes))
                          ),
                          selectInput("offspring_1",
                                      "Do you want Kids?",
-                                     choices = c("NO PREFERENCE", CupidDf$offspring_1)
+                                     choices = c("NO PREFERENCE", as.character(CupidDf$offspring_1))
                          )
                         )
                      ),
