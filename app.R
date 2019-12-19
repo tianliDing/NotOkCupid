@@ -73,7 +73,7 @@ ui <- navbarPage(
                                  min = 1,  max = 300,  value = 100)  
                  ),
                  mainPanel(
-                     plotOutput("plot", height = "800px", width = "800px"),
+                     plotOutput("plot", height = "900px", width = "900px"),
                  ),
     )
     ),
