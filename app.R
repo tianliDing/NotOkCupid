@@ -80,7 +80,7 @@ ui <- navbarPage(
     
 ##### ==================================== Relationship ====================================== 
 
-tabPanel("Get to know your potential matches!",
+tabPanel("Get To Know Your Potential Matches!",
          fluidRow(
              column(3,
                     wellPanel(
