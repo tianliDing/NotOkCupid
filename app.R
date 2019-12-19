@@ -22,10 +22,13 @@ library(shinythemes)
 MyCupid = read.csv("MyCupid.csv")
 varss = list("Job","Ethnicity")
 # data cleaning
+#CupidDf <- MyCupid %>%
+    #mutate(cupid_name = row.names(MyCupid)) %>%
+    #select(cupid_name, age, sex, height)
 CupidDf <- MyCupid %>%
     mutate(cupid_name = row.names(MyCupid)) %>%
-    select(cupid_name, age, sex, height)
-
+    #select(cupid_name, age, height, offspring_1, sign,body_type,drinks,drugs,status,smokes)
+select(cupid_name, age, sex, height, offspring_1, sign,body_type,drinks,drugs,status,smokes)
 # Define UI for application
 
 ui <- navbarPage(
@@ -121,7 +124,7 @@ tabPanel("Component 3",
 ),
                  
 ##### ==================================== Dating ======================================
-    
+  
     tabPanel("Component 4",
              titlePanel("DATING EXPLORER"),
              fluidRow(
