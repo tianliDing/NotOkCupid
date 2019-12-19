@@ -25,8 +25,8 @@ varss = list("Job","Ethnicity")
 # data cleaning
 
 CupidDf <- MyCupid %>%
-    mutate(cupid_name = row.names(MyCupid)) %>%
-    dplyr::select(cupid_name, age, sex, height,offspring_1,sign,body_type,status,drinks,drugs,smokes)
+    mutate(ID = row.names(MyCupid)) %>%
+    dplyr::select(ID, age, sex, height,offspring_1,sign,body_type,status,drinks,drugs,smokes)
 
 ui <- navbarPage(
     fluid = TRUE,
@@ -287,7 +287,7 @@ server <- function(input, output, session) {
         if (input$name != "") {
             CupidDf <- CupidDf %>%
                 filter(
-                    grepl(input$name, cupid_name, ignore.case = TRUE)
+                    grepl(input$name, ID, ignore.case = TRUE)
                 )
             
         }
@@ -309,7 +309,7 @@ server <- function(input, output, session) {
     reactiveDf <- reactive({
         CupidDf %>%
             filter(
-                conditional(input$name != "", grepl(input$name, cupid_name, ignore.case = TRUE)),
+                conditional(input$name != "", grepl(input$name, ID, ignore.case = TRUE)),
                 conditional(input$sign != "NO PREFERENCE", sign == input$sign),
                 conditional(input$body_type != "NO PREFERENCE", body_type == input$body_type),
                 conditional(input$drinks != "NO PREFERENCE", drinks == input$drinks),
