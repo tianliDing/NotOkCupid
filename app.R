@@ -19,7 +19,7 @@ library(dplyr)
 # data cleaning
 CupidDf <- MyCupid %>%
     mutate(cupid_name = row.names(MyCupid)) %>%
-    select(cupid_name, age, sex, height, offspring_1, sign,body_type,drinks,drugs,status,smokes)
+    select(cupid_name, age, sex, height)
 
 
 
