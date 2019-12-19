@@ -13,6 +13,7 @@ library(readr)
 library(wordcloud)
 library(memoise)
 #library(ggvis)
+library(ggplot2)
 library(shiny)
 library(shinyWidgets)
 library(dplyr)
@@ -29,7 +30,7 @@ CupidDf <- MyCupid %>%
 
 ui <- navbarPage(
     fluid = TRUE,
-    theme = shinytheme("paper"),
+    theme = shinytheme("journal"),
     "NotOkCupid",
 ##### ==================================== About Page ======================================    
     tabPanel("Story Board",
@@ -42,32 +43,23 @@ ui <- navbarPage(
              )
     ),
 ##### ==================================== Demographic1 ======================================    
-    navbarMenu("GET TO KNOW YOUR POTENTIAL MATCHES!",
-    tabPanel("Age, Height and Income",
-             titlePanel("Age, Height and Income"),
-             sidebarLayout(
-             sidebarPanel(
-                 sliderInput("bins",
-                             "Number of bins:",
-                             min = 18,
-                             max = 69,
-                             value = 30),
-                 selectInput("yv", "Y-axis:",
-                             c("INCOME" = "income", "HEIGHT" = "height")),
-             ),
-             mainPanel(
-                 column(8, align="center",
-                        plotOutput("distPlot"),
-                 )
-                 
-             )),
-             setBackgroundImage(src = "http://static.adweek.com/adweek.com-prod/wp-content/uploads/2018/01/dtf-hed-2017.jpg")
-    ), 
-    
+    navbarMenu("OkCupid User Pool",
+               tabPanel("Demographic",
+                        titlePanel("Demographic"),
+                        sidebarLayout(
+                            sidebarPanel(
+                                
+                                selectInput("yv", "Your Choise",
+                                            choice = c("height","offspring","status","drugs","drinks","sign","smokes")),
+                            ),
+                            mainPanel(
+                                plotOutput("distPlot"),
+                            )),
+                        setBackgroundImage(src = "http://static.adweek.com/adweek.com-prod/wp-content/uploads/2018/01/dtf-hed-2017.jpg")
+               ),
     ##### ==================================== Demographic2 ======================================    
     tabPanel("Ethnicity and Job",
              titlePanel("Ethnicity and Job"),
-             
                  selectInput("selection", "Choose a Variable:",
                              choices = varss),
                  actionButton("update", "Change"),
@@ -88,8 +80,7 @@ ui <- navbarPage(
     
 ##### ==================================== Relationship ====================================== 
 
-tabPanel("Component 3",
-         titlePanel("RELATIONSHIP"),
+tabPanel("Get to know your potential matches!",
          fluidRow(
              column(3,
                     wellPanel(
@@ -198,27 +189,34 @@ server <- function(input, output, session) {
     
     output$distPlot <- renderPlot({
         # generate bins based on input$bins from ui.R
-        x    <- MyCupid[,2]
-        bins <- seq(min(x), max(x), length.out = input$bins + 1)
-        # draw the histogram with the specified number of bins
-        hist(x, breaks = bins, col = 'darkgray', border = 'white')
-    })
-
-    output$relationship <- renderPlot({
-
-        if(input$xv == "age"){
-            x <- MyCupid[,2]
-        }else if(input$xv == "height"){
-            x <- MyCupid[,9]
+        
+        if(input$yv == "height" ) {
+            if(input$yv == "height"){
+                y <- MyCupid[,9]}
+            #draw the histogram with the specified number of bins
+            hist(y, col = 'lightpink2', border = 'white',xlab=input$yv,main = paste("Histogram of",input$yv))
+            
         }
-        if(input$yv == "income"){
-            y<- MyCupid[,10]
-        }else if(input$yv == "height"){
-            y<- MyCupid[,9]
+        else { 
+            if(input$yv == "offspring"){
+                y <- MyCupid[,23]}
+            else if(input$yv == "drugs"){
+                y <- MyCupid[,6]}
+            else if (input$yv == "status"){
+                y <- MyCupid[,22]}
+            else if (input$yv == "drinks"){
+                y <- MyCupid[,5]}
+            else if (input$yv == "sign"){
+                y <- MyCupid[,19]}
+            else if (input$yv == "smokes"){
+                y <- MyCupid[,20]}
+            # Most basic bar chart
+            ggplot(MyCupid, aes(x = factor(y))) +
+                geom_bar(fill = "lightpink2") + xlab(input$yv)+
+                theme_classic()+ggtitle(paste("frequency of",input$yv))
         }
-           # MyCupid[, c(x, y), drop = FALSE]
-        plot(x,y)
-    })
+        
+    } )
 ##### ==================================== Component2 ======================================    
     # Define a reactive expression for the document term matrix
     terms <- reactive({

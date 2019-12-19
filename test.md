@@ -1,6 +1,6 @@
 ## NotOkCupid's Story Board 
 ![image info](./comment.png)
-### What is OkCupid
+### What is OkCupid?
 ### Issues!
 ### Quotes from Reviews
 
